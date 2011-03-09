@@ -283,6 +283,8 @@ class Skeleton(collections.MutableMapping):
 
         for dir_path, dir_names, file_names in os.walk(real_src):
             rel_dir_path = dir_path[real_src_len:].lstrip(r'\/')
+            # apply template formatting to directories
+            rel_dir_path = self._format_file_name(rel_dir_path, dir_path)
 
             #copy files
             for file_name in file_names:
