@@ -132,3 +132,18 @@ def prompt(prompt_):
         return result.decode(sys.stdin.encoding)
     except AttributeError:
         return result
+
+
+def ignored(path,ignore):
+    """
+    return true if one of the string in ignore is found in the path
+    """
+    ignored = False
+
+    if ignore is not None:
+        for s in ignore:
+            if s in path:
+                ignored = True
+
+    return ignored
+

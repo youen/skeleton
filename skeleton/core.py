@@ -12,12 +12,9 @@ import shutil
 import sys
 import weakref
 
-from skeleton.utils import (
-    get_loggger, get_file_mode, vars_to_optparser, prompt)
-
+from skeleton.utils import (get_loggger, get_file_mode, vars_to_optparser, prompt, ignored)
 
 _LOG = get_loggger(__name__)
-
 
 class SkeletonError(Exception):
     """Root exception"""
@@ -244,7 +241,7 @@ class Skeleton(collections.MutableMapping):
                 _LOG.debug("Variable %r already set", var.name)
 
     @run_requirements_first
-    def write(self, dst_dir, run_dry=False):
+    def write(self, dst_dir, run_dry=False, ignore=None):
         """Apply skeleton to `dst_dir`.
 
         Copy files and folders from the `src` folder to the `dst_dir`.
@@ -289,6 +286,8 @@ class Skeleton(collections.MutableMapping):
             #copy files
             for file_name in file_names:
                 src = os.path.join(dir_path, file_name)
+                if ignored(src,ignore):
+                    continue
                 dst = os.path.join(
                     dst_dir,
                     rel_dir_path,
@@ -299,13 +298,15 @@ class Skeleton(collections.MutableMapping):
             #copy directories
             for dir_name in dir_names:
                 src = os.path.join(dir_path, dir_name)
+                if ignored(src,ignore):
+                    continue
                 dst = os.path.join(
                     dst_dir,
                     rel_dir_path,
                     self.template_formatter(dir_name))
                 self._mkdir(dst, like=src)
 
-    def run(self, dst_dir, run_dry=False):
+    def run(self, dst_dir, run_dry=False, ignore=None):
         """Like write() but prompt user for missing variables.
 
         Raises:
@@ -316,7 +317,7 @@ class Skeleton(collections.MutableMapping):
           files and folder.
         """
         self.get_missing_variables()
-        self.write(dst_dir, run_dry=run_dry)
+        self.write(dst_dir, run_dry=run_dry, ignore=ignore)
 
     @classmethod
     def cmd(cls, argv=None, **kw):
